@@ -1,0 +1,1 @@
+global.AuthValidator = require("./AuthValidator");

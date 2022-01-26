@@ -14,6 +14,10 @@ const schema = new Schema(
             type: Schema.Types.ObjectId,
             ref: "Audio"
         },
+        user: {
+            type: Schema.Types.ObjectId,
+            ref: "User"
+        },
         tags: [{
             type: String
         }],
