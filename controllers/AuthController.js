@@ -36,8 +36,17 @@ const login = async (req, res) => {
         success: true,
         message: `Welcome ${user.name}`,
         data: {
-            accessToken: token
+            accessToken: token,
+            user: user
         }
+    });
+};
+
+const logout = async (req, res) => {
+
+    res.json({
+        success: true,
+        message: `Logged out successfully`
     });
 };
 
@@ -72,5 +81,6 @@ const register = async (req, res) => {
 
 module.exports = {
     login,
+    logout,
     register
 };

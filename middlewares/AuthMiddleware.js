@@ -20,6 +20,7 @@ const isAuthorized = (req, res, next) => {
         });
     }
 
+    req.token = token;
     req.user = decoded.user;
     next();
 };
