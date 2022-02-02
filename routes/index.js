@@ -3,7 +3,7 @@ const route = require("express").Router();
 route.get("/", HomeController.welcome);
 route.use("/auth", require("./auth"));
 
-route.get("/test-posts", AuthMiddleware.isAuthorized, HomeController.testPosts);
+route.post("/upload", AuthMiddleware.isAuthorized, upload.single("video"), HomeController.upload);
 
 route.get("**", HomeController.notFound);
 

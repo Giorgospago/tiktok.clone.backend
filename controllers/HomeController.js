@@ -5,11 +5,11 @@ const welcome = (req, res) => {
     });
 };
 
-const testPosts = (req, res) => {
+const upload = (req, res) => {
     res.json({
         success: true,
         message: `No posts found`,
-        data: req.user.name
+        data: req.file
     });
 };
 
@@ -22,6 +22,6 @@ const notFound = (req, res) => {
 
 module.exports = {
     welcome,
-    testPosts,
+    upload,
     notFound
 };
