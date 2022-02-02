@@ -8,7 +8,7 @@ const welcome = (req, res) => {
 const upload = (req, res) => {
     res.json({
         success: true,
-        message: `No posts found`,
+        message: `File uploaded successfully`,
         data: req.file
     });
 };
