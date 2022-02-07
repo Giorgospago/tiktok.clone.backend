@@ -29,7 +29,9 @@ const schema = new Schema(
             default: true
         },
         scope: {
-            type: String
+            type: String,
+            enum: ["private", "friends", "public"],
+            default: "public"
         },
         stats: {
             type: Schema.Types.Mixed
