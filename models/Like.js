@@ -16,8 +16,15 @@ const schema = new Schema(
         }
     },
     {
-        timestamps: true
+        timestamps: true,
+        toObject: {
+            virtuals: true
+        }
     }
 );
+
+schema.virtual("liked").get(function() {
+    return !!(this.pressed % 2);
+});
 
 module.exports = model("Like", schema);
