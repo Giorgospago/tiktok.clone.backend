@@ -1,4 +1,22 @@
 
+const search = async (req, res) => {
+    const limit = req.body.limit || 1;
+    const seen = req.body.seen || [];
+    const posts = await Post
+        .find({
+            _id: {$nin: seen}
+        })
+        .populate("user")
+        .limit(limit)
+        .exec();
+
+    res.json({
+        success: true,
+        message: "Posts fetched successfully",
+        data: posts
+    });
+};
+
 const create = async (req, res) => {
     const user = await User.findById(req.user._id).exec();
 
@@ -22,5 +40,6 @@ const create = async (req, res) => {
 };
 
 module.exports = {
+    search,
     create,
 };
