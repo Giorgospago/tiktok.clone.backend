@@ -1,3 +1,4 @@
+const {body} = require("express-validator");
 
 const like = async (req, res) => {
     const postId = req.params.id;
@@ -48,11 +49,13 @@ const like = async (req, res) => {
 const search = async (req, res) => {
     const limit = req.body.limit || 1;
     const seen = req.body.seen || [];
+    const me = await User.findById(req.user._id).exec();
 
     let posts = await Post
         .find({
             _id: {$nin: seen},
             active: true,
+            user: {$ne: me._id}
         })
         .select({
             createdAt: 1,
@@ -80,7 +83,9 @@ const search = async (req, res) => {
     posts = posts.map(p => {
         p = p.toObject();
 
-        p.liked = p.likes.some(l => l.user.toString() === req.user._id.toString());
+        const myFollowing = me.following.map(f => f.toString());
+        p.user.following = myFollowing.includes(p.user._id.toString());
+        p.liked = p.likes.some(l => l.user.toString() === me._id.toString());
 
         p.likes = p.likes.length;
         p.shares = p.shares.length;
@@ -117,8 +122,48 @@ const create = async (req, res) => {
     });
 };
 
+const getComments = async (req, res) => {
+    const comments = await Comment
+        .find({
+            post: req.params.id
+        })
+        .populate({
+            path: "user"
+        })
+        .sort({
+            createdAt: -1
+        })
+        .exec();
+
+    res.json({
+        success: true,
+        data: comments,
+        message: "Post comments"
+    });
+};
+
+const addComment = async (req, res) => {
+    const post = await Post.findById(req.body.post).exec();
+    const doc = new Comment({
+        ...req.body,
+        user: req.user._id
+    });
+    await doc.save();
+
+    post.comments.push(doc._id);
+    await post.save();
+
+    res.json({
+        success: true,
+        data: doc,
+        message: "Comment created"
+    });
+};
+
 module.exports = {
     like,
     search,
     create,
+    getComments,
+    addComment
 };
