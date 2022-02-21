@@ -123,17 +123,46 @@ const create = async (req, res) => {
 };
 
 const getComments = async (req, res) => {
-    const comments = await Comment
-        .find({
-            post: req.params.id
-        })
-        .populate({
-            path: "user"
-        })
-        .sort({
-            createdAt: -1
-        })
-        .exec();
+    // const comments = await Comment
+    //     .find({
+    //         post: req.params.id
+    //     })
+    //     .populate({
+    //         path: "user"
+    //     })
+    //     .sort({
+    //         createdAt: -1
+    //     })
+    //     .exec();
+
+    const comments = await Comment.aggregate([
+        {
+            $match: {
+                post: _(req.params.id),
+                comment: {$exists: false}
+            }
+        },
+        {
+            $sort: {
+                createdAt: -1
+            }
+        },
+        {
+            $graphLookup: {
+                from: "comments",
+                startWith: "$_id",
+                connectFromField: "_id",
+                connectToField: "comment",
+                maxDepth: 0,
+                as: "replies"
+            }
+        },
+        {
+            $set: {
+                replies: {$size: "$replies"}
+            }
+        }
+    ]);
 
     res.json({
         success: true,

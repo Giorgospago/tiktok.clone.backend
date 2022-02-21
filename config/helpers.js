@@ -1,3 +1,4 @@
+const {Types} = require('mongoose');
 const bcrypt = require('bcryptjs');
 
 global.bcryptHash = (str) => {
@@ -7,5 +8,9 @@ global.bcryptHash = (str) => {
 
 global.bcryptCompare = (strA, strB) => {
     return bcrypt.compareSync(strA, strB);
+};
+
+global._ = (strId) => {
+    return Types.ObjectId(strId);
 };
 
