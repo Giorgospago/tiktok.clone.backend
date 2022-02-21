@@ -48,7 +48,56 @@ const follow = async (req, res) => {
     });
 };
 
+const userProfile = async (req, res) => {
+    const postUserId = req.params.id;
+    const user = await User
+        .findById(postUserId)
+        .populate([
+            {
+                path: "posts",
+                options: {
+                    sort: "-createdAt"
+                }
+            }
+        ])
+        .exec();
+
+    if (!user) {
+        res.json({
+            success: false,
+            message: "user not found"
+        })
+    }
+
+    res.json({
+        success: true,
+        message: "user fetched successfully",
+        data: user
+    })
+};
+
+const following = async (req, res) => {
+    const user = await User
+        .findById(req.user._id)
+        .select({
+            following: 1
+        })
+        .exec();
+        
+    const userFollowing = await User
+        .findById(user.following)
+        .exec();
+
+    res.json({
+        success: true,
+        message: "following users fetched successfully",
+        data: userFollowing
+    })
+};
+
 module.exports = {
     me,
-    follow
+    follow,
+    userProfile,
+    following
 };
