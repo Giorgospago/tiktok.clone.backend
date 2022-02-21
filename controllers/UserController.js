@@ -78,20 +78,20 @@ const userProfile = async (req, res) => {
 
 const following = async (req, res) => {
     const user = await User
-        .findById(req.user._id)
+        .findById(req.params.id)
         .select({
             following: 1
         })
-        .exec();
-        
-    const userFollowing = await User
-        .findById(user.following)
+        .populate({
+            path: "following",
+            // select: {}
+        })
         .exec();
 
     res.json({
         success: true,
         message: "following users fetched successfully",
-        data: userFollowing
+        data: user.following
     })
 };
 
