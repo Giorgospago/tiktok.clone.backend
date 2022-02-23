@@ -78,6 +78,9 @@ const search = async (req, res) => {
             {path: "likes"}
         ])
         .limit(limit)
+        .sort({
+            updatedAt: -1
+        })
         .exec();
 
     posts = posts.map(p => {
