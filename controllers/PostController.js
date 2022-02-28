@@ -49,14 +49,22 @@ const like = async (req, res) => {
 const search = async (req, res) => {
     const limit = req.body.limit || 1;
     const seen = req.body.seen || [];
+    const ids = req.body.ids || [];
     const me = await User.findById(req.user._id).exec();
 
+    const filters = {
+        active: true
+    };
+
+    if (ids.length) {
+        filters._id = {$in: ids};
+    } else if (seen.length) {
+        filters._id = {$nin: seen};
+        filters.user = {$ne: me._id}
+    }
+
     let posts = await Post
-        .find({
-            _id: {$nin: seen},
-            active: true,
-            user: {$ne: me._id}
-        })
+        .find(filters)
         .select({
             createdAt: 1,
             description: 1,
