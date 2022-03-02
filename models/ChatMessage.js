@@ -33,9 +33,7 @@ const schema = new Schema(
             type: Schema.Types.ObjectId,
             ref: "User"
         }],
-        untold: [{
-            type: String
-        }]
+        untold: Boolean
     },
     {
         timestamps: true

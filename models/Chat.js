@@ -20,7 +20,8 @@ const schema = new Schema(
             type: String
         },
         mute: {
-            type: Boolean
+            type: Boolean,
+            default: false
         }
     },
     {

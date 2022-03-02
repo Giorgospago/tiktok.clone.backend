@@ -2,7 +2,7 @@ const getReplies = async (req, res) => {
     const comments = await Comment.aggregate([
         {
             $match: {
-                comment: _(req.params.id)
+                comment: ObjectId(req.params.id)
             }
         },
         {

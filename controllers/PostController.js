@@ -149,7 +149,7 @@ const getComments = async (req, res) => {
     const comments = await Comment.aggregate([
         {
             $match: {
-                post: _(req.params.id),
+                post: ObjectId(req.params.id),
                 comment: {$exists: false}
             }
         },
