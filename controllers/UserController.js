@@ -17,6 +17,7 @@ const me = async (req, res) => {
         message: "Your post just created"
     });
 };
+
 const follow = async (req, res) => {
     const loggedIn = await User.findById(req.user._id).exec();
     const toFollow = await User.findById(req.params.id).exec();
@@ -95,9 +96,107 @@ const following = async (req, res) => {
     })
 };
 
+const followers = async (req, res) => {
+    const user = await User
+        .findById(req.params.id)
+        .select({
+            followers: 1
+        })
+        .populate({
+            path: "followers",
+            // select: {}
+        })
+        .exec();
+
+    res.json({
+        success: true,
+        message: "following users fetched successfully",
+        data: user.followers,
+    })
+};
+
+const unfollowFollowers = async (req, res) => {
+    const loggedIn = await User
+        .findById(req.user._id)
+        .select("followers")
+        .exec();
+    const toUnfollow = await User
+        .findById(req.params.id)
+        .select("following")
+        .exec();
+
+    const strFollowers = loggedIn.followers.map(f => f.toString());
+    const strFollowing = toUnfollow.following.map(f => f.toString());
+    if (!strFollowers.includes(toUnfollow._id.toString())) {
+        return res.json({
+            success: false,
+            message: "You already unfollowing this user"
+        });
+    }
+
+    if (!strFollowing.includes(loggedIn._id.toString())) {
+        return res.json({
+            success: false,
+            message: "You already unfollowing this user"
+        });
+    }
+
+    loggedIn.followers = loggedIn.followers.filter(f => f._id.toString() !== toUnfollow._id.toString());
+    toUnfollow.following = toUnfollow.following.filter(f => f._id.toString() !== loggedIn._id.toString());
+
+    await loggedIn.save();
+    await toUnfollow.save();
+
+    res.json({
+        success: true,
+        message: `unfollow ${toUnfollow._id}`,
+    })
+};
+
+const unfollowFollowing = async (req, res) => {
+    const loggedIn = await User
+        .findById(req.user._id)
+        .select("following")
+        .exec();
+    const toUnfollow = await User
+        .findById(req.params.id)
+        .select("followers")
+        .exec();
+
+    const strFollowing = loggedIn.following.map(f => f.toString());
+    const strFollower = toUnfollow.followers.map(f => f.toString());
+    if (!strFollowing.includes(toUnfollow._id.toString())) {
+        return res.json({
+            success: false,
+            message: "You already unfollowing this user"
+        });
+    }
+
+    if (!strFollower.includes(loggedIn._id.toString())) {
+        return res.json({
+            success: false,
+            message: "You already unfollowing this user"
+        });
+    }
+
+    loggedIn.following = loggedIn.following.filter(f => f._id.toString() !== toUnfollow._id.toString());
+    toUnfollow.followers = toUnfollow.followers.filter(f => f._id.toString() !== loggedIn._id.toString());
+
+    await loggedIn.save();
+    await toUnfollow.save();
+
+    res.json({
+        success: true,
+        message: `unfollow ${toUnfollow._id}`,
+    })
+};
+
 module.exports = {
     me,
     follow,
     userProfile,
-    following
+    following,
+    followers,
+    unfollowFollowers,
+    unfollowFollowing
 };

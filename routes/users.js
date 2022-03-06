@@ -8,6 +8,8 @@ route.get("/me", AuthMiddleware.isAuthorized, UserController.me);
 route.get("/follow/:id", AuthMiddleware.isAuthorized, UserController.follow);
 route.get("/profile/:id", AuthMiddleware.isAuthorized, UserController.userProfile);
 route.get("/profile/:id/following", AuthMiddleware.isAuthorized, UserController.following);
-// route.get("/unfollow/:id", AuthMiddleware.isAuthorized, UserController.unfollow);
+route.get("/profile/:id/followers", AuthMiddleware.isAuthorized, UserController.followers);
+route.get("/unfollow/followers/:id", AuthMiddleware.isAuthorized, UserController.unfollowFollowers);
+route.get("/unfollow/following/:id", AuthMiddleware.isAuthorized, UserController.unfollowFollowing);
 
 module.exports = route;
