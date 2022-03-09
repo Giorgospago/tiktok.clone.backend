@@ -12,13 +12,43 @@ const getChats = async (req, res) => {
         ])
         .exec();
 
+    const chatIds = chats.map(c => c._id);
+    const lastMessages = await ChatMessage.aggregate([
+        {
+            $match: {
+                chat: {$in: chatIds}
+            }
+        },
+        {
+            $sort: {
+                createdAt: -1
+            }
+        },
+        {
+            $group: {
+                _id: "$chat",
+                doc: {$first: "$$CURRENT"}
+            }
+        },
+        {
+            $project: {
+                _id: 0,
+                chat: "$doc.chat",
+                message: "$doc.message",
+                createdAt: "$doc.createdAt"
+            }
+        }
+    ]);
+
     chats = chats.map(c => {
+        c = c.toObject();
         const names = c.users
             .filter(u => u._id.toString() !== req.user._id.toString())
             .map(u => u.name)
             .join(", ");
 
         c.name = c.name || names;
+        c.lastMessage = lastMessages.find(lm => lm.chat.toString() === c._id.toString());
 
         return c;
     });
@@ -105,11 +135,16 @@ const getChatMessages = async (req, res) => {
        });
     }
 
-    const messages = await ChatMessage.find({chat: chat._id});
+    const messages = await ChatMessage
+        .find({chat: chat._id})
+        .limit(20)
+        .sort({
+            createdAt: -1
+        });
 
     res.json({
         success: true,
-        data: messages,
+        data: messages.reverse(),
         message: "Chat messages fetched"
     });
 };
