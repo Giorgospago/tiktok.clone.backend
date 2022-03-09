@@ -1,6 +1,6 @@
 
 io.on('connection', (socket) => {
 
-    console.log('a user connected with id ' + socket.id);
+    socket.on("chat:send-message", data => ChatController.onSendMessage(socket, data));
 
 });

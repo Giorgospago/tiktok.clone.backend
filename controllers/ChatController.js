@@ -94,17 +94,51 @@ const getChat = async (req, res) => {
 };
 
 const getChatMessages = async (req, res) => {
+    const chat = await Chat.findById(req.params.chatId);
+    const myId = req.user._id.toString();
+    const chatUsers = chat.users.map(u => u.toString());
+
+    if (!chatUsers.includes(myId)) {
+       return res.json({
+           success: false,
+           message: "You have not access to this chat"
+       });
+    }
+
+    const messages = await ChatMessage.find({chat: chat._id});
+
     res.json({
         success: true,
-        data: [],
+        data: messages,
         message: "Chat messages fetched"
     });
 };
+
+
+/**
+ * Socket Methods
+ */
+const onSendMessage = async (socket, data) => {
+    const newMessage = {
+        message: data.text,
+        sender: data.sender,
+        chat: data.chat
+    };
+    const chatMessage = new ChatMessage(newMessage);
+    await chatMessage.save();
+
+    io.emit(`chat:receive-message:${data.chat}`, chatMessage);
+};
+
+
 
 module.exports = {
     getChat,
     getChatMessages,
     create,
     getChats,
-    getUsersForChatting
+    getUsersForChatting,
+
+    // socket methods
+    onSendMessage
 };
