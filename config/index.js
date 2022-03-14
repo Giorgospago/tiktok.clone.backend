@@ -8,3 +8,4 @@ require("../controllers");
 require("./pug");
 require("./mailer");
 require("./sockets");
+require("./firebase");

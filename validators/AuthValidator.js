@@ -11,6 +11,13 @@ const login = [
     ValidationResult
 ];
 
+const socialLogin = [
+    check('token')
+        .exists().withMessage('token is required')
+        .isJWT().withMessage('This is not a JWT'),
+    ValidationResult
+];
+
 const register = [
     check('name')
         .exists().withMessage('Name is required field')
@@ -26,5 +33,6 @@ const register = [
 
 module.exports = {
     login,
+    socialLogin,
     register
 };

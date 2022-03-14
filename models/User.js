@@ -5,6 +5,9 @@ const schema = new Schema(
         uid: {
             type: String
         },
+        provider: {
+            type: String
+        },
         name: {
             type: String
         },
