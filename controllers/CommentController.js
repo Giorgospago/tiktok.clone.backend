@@ -24,6 +24,32 @@ const getReplies = async (req, res) => {
             $set: {
                 replies: {$size: "$replies"}
             }
+        },
+        {
+            $lookup: {
+                from: "users",
+                localField: "user",
+                foreignField: "_id",
+                as: "user"
+            }
+        },
+        {
+            $set: {
+                user: {
+                    $arrayElemAt: ["$user", 0]
+                }
+            }
+        },
+        {
+            $project: {
+                replies: 1,
+                text: 1,
+                "user._id": 1,
+                "user.name": 1,
+                "user.photo": 1,
+                createdAt: 1,
+                updatedAt: 1
+            }
         }
     ]);
 
