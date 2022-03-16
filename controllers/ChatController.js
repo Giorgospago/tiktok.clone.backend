@@ -149,6 +149,35 @@ const getChatMessages = async (req, res) => {
     });
 };
 
+const getChatFromUser = async (req, res) => {
+    const loggedIn = await User.findById(req.user._id);
+    const userProfile = await User.findById(req.params.id);
+
+    const chat = await Chat.findOne({
+        $and: [
+            {
+                users: {$elemMatch: {$eq: loggedIn._id}}
+            },
+            {
+                users: {$elemMatch: {$eq: userProfile._id}}
+            }
+        ]
+    })
+
+    if (!chat) {
+        return res.json({
+            success: false,
+            message: "chat not found"
+        })
+    }
+
+    res.json({
+        success: true,
+        message: "chat fetched",
+        data: chat
+    })
+};
+
 
 /**
  * Socket Methods
@@ -173,6 +202,7 @@ module.exports = {
     create,
     getChats,
     getUsersForChatting,
+    getChatFromUser,
 
     // socket methods
     onSendMessage
