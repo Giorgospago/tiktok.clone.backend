@@ -90,6 +90,12 @@ const login = async (req, res) => {
 
 const logout = async (req, res) => {
 
+    if (req.body && req.body.token) {
+        const user = await User.findById(req.user._id);
+        user.deviceTokens = user.deviceTokens.filter(t => t !== req.body.token);
+        await user.save();
+    }
+
     res.json({
         success: true,
         message: `Logged out successfully`

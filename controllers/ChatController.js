@@ -1,3 +1,4 @@
+const admin = require('firebase-admin');
 
 const getChats = async (req, res) => {
     let chats = await Chat
@@ -160,22 +161,25 @@ const getChatFromUser = async (req, res) => {
             },
             {
                 users: {$elemMatch: {$eq: userProfile._id}}
+            },
+            {
+                "users.2": {$exists: false}
             }
         ]
-    })
+    });
 
     if (!chat) {
         return res.json({
             success: false,
             message: "chat not found"
-        })
+        });
     }
 
     res.json({
         success: true,
         message: "chat fetched",
         data: chat
-    })
+    });
 };
 
 
@@ -190,6 +194,33 @@ const onSendMessage = async (socket, data) => {
     };
     const chatMessage = new ChatMessage(newMessage);
     await chatMessage.save();
+
+    const chat = await Chat
+        .findById(data.chat)
+        .populate([
+            {
+                path: "users",
+                select: "deviceTokens name photo"
+            }
+        ]);
+
+    const sender = chat.users.find(u => u.id === data.sender);
+    const receivers = chat.users.filter(u => u.id !== data.sender);
+
+    for (let u of receivers) {
+        for (let t of u.deviceTokens) {
+            if (t.trim()) {
+                admin.messaging().send({
+                    notification: {
+                        title: sender.name,
+                        body: data.text,
+                        imageUrl: sender.photo
+                    },
+                    token: t
+                });
+            }
+        }
+    }
 
     io.emit(`chat:receive-message:${data.chat}`, chatMessage);
 };

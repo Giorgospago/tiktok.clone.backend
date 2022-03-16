@@ -11,5 +11,6 @@ route.get("/profile/:id/following", AuthMiddleware.isAuthorized, UserController.
 route.get("/profile/:id/followers", AuthMiddleware.isAuthorized, UserController.followers);
 route.get("/unfollow/followers/:id", AuthMiddleware.isAuthorized, UserController.unfollowFollowers);
 route.get("/unfollow/following/:id", AuthMiddleware.isAuthorized, UserController.unfollowFollowing);
+route.post("/add-device-token", AuthMiddleware.isAuthorized, UserController.addDeviceToken);
 
 module.exports = route;

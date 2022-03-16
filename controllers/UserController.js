@@ -191,6 +191,29 @@ const unfollowFollowing = async (req, res) => {
     })
 };
 
+const addDeviceToken = async (req, res) => {
+    const token = req.body.token || "";
+
+    const oldUsers = await User.find({
+        deviceTokens: {$elemMatch: {$eq: token}}
+    });
+    for (let oldUser of oldUsers) {
+        oldUser.deviceTokens = oldUser.deviceTokens.filter(t => t !== token);
+        await oldUser.save();
+    }
+
+    const user = await User.findById(req.user._id);
+    if (!user.deviceTokens.includes(token)) {
+        user.deviceTokens.push(token);
+        await user.save();
+    }
+
+    res.json({
+        success: true,
+        message: `Device token added`,
+    })
+};
+
 module.exports = {
     me,
     follow,
@@ -198,5 +221,6 @@ module.exports = {
     following,
     followers,
     unfollowFollowers,
-    unfollowFollowing
+    unfollowFollowing,
+    addDeviceToken
 };
