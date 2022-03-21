@@ -9,10 +9,12 @@ const schema = new Schema(
             type: String
         },
         name: {
-            type: String
+            type: String,
+            index: true
         },
         username: {
-            type: String
+            type: String,
+            index: true
         },
         email: {
             type: String,

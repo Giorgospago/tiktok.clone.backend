@@ -15,7 +15,8 @@ const schema = new Schema(
             ref: "Comment"
         },
         text: {
-            type: String
+            type: String,
+            index: true
         },
         untold: [{
             type: String

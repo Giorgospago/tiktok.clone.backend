@@ -1,49 +1,55 @@
-const {body} = require("express-validator");
-
 const like = async (req, res) => {
-    const postId = req.params.id;
-    const userId = req.user._id;
+    // TODO zartas
+    try {
+        const postId = req.params.id;
+        const userId = req.user._id;
 
-    const post = await Post.findById(postId).exec();
-    if (!post) {
-        return res.json({
+        const post = await Post.findById(postId).exec();
+        if (!post) {
+            return res.json({
+                success: false,
+                message: "Post not found"
+            });
+        }
+
+        let postLike = await Like.findOneAndUpdate(
+            {
+                post: postId,
+                user: userId
+            },
+            {
+                $inc: {
+                    pressed: 1
+                }
+            },
+            {
+                new: true,
+                upsert: true
+            }
+        ).exec();
+
+        if (postLike.liked) {
+            post.likes.push(postLike._id);
+        } else {
+            post.likes = post.likes
+                .filter(id => id.toString() !== postLike._id.toString());
+        }
+        await post.save();
+
+        res.json({
+            success: true,
+            message: "Posts liked successfully",
+            data: {
+                liked: postLike.liked,
+                likes: post.likes.length
+            }
+        });
+    } catch (e) {
+        res.json({
             success: false,
-            message: "Post not found"
+            message: e.message
         });
     }
-
-    let postLike = await Like.findOneAndUpdate(
-        {
-            post: postId,
-            user: userId
-        },
-        {
-            $inc: {
-                pressed: 1
-            }
-        },
-        {
-            new: true,
-            upsert: true
-        }
-    ).exec();
-
-    if (postLike.liked) {
-        post.likes.push(postLike._id);
-    } else {
-        post.likes = post.likes
-            .filter(id => id.toString() !== postLike._id.toString());
-    }
-    await post.save();
-
-    res.json({
-        success: true,
-        message: "Posts liked successfully",
-        data: {
-            liked: postLike.liked,
-            likes: post.likes.length
-        }
-    });
 };
 
 const search = async (req, res) => {
@@ -68,7 +74,7 @@ const search = async (req, res) => {
         .select({
             createdAt: 1,
             description: 1,
-            scope:1,
+            scope: 1,
             tags: 1,
             videoUrl: 1,
             likes: 1,
@@ -226,10 +232,87 @@ const addComment = async (req, res) => {
     });
 };
 
+const storeNewView = async (req, res) => {
+    const doc = await View({
+        enteredAt: req.body.enteredAt,
+        leftAt: req.body.leftAt,
+        post: req.body.post,
+        user: req.user._id
+    });
+    await doc.save();
+    res.json({
+        success: true,
+        message: "View added successfully"
+    });
+};
+
+const textSearch = async (req, res) => {
+
+    const reg = {$regex: req.body.key, $options: 'gi'};
+    const promises = [
+        Post
+            .find({
+                description: reg
+            })
+            .select({
+                createdAt: 1,
+                description: 1,
+                scope: 1,
+                tags: 1,
+                videoUrl: 1,
+                likes: 1,
+                shares: 1,
+                comments: 1
+            })
+            .populate([
+                {
+                    path: "user",
+                    select: {
+                        name: 1,
+                        photo: 1
+                    }
+                },
+                {path: "likes"}
+            ])
+            .sort({
+                updatedAt: -1
+            })
+            .exec(),
+        User
+            .find({
+                $or: [
+                    {name: reg},
+                    {gender: reg},
+                    {username: reg}
+                ]
+            })
+            .exec(),
+        Comment
+            .find({
+                text: reg
+            })
+            .exec()
+    ];
+
+    const [posts, users, comments] = await Promise.all(promises);
+
+    res.json({
+        success: true,
+        data: {
+            posts,
+            users,
+            comments
+        },
+        message: "Search results"
+    });
+};
+
 module.exports = {
     like,
     search,
     create,
     getComments,
-    addComment
+    addComment,
+    textSearch,
+    storeNewView
 };

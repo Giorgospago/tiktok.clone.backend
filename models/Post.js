@@ -22,7 +22,8 @@ const schema = new Schema(
             type: String
         }],
         description: {
-            type: String
+            type: String,
+            index: true
         },
         active: {
             type: Boolean,
