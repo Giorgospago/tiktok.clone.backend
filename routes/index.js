@@ -7,7 +7,7 @@ route.use("/posts", require("./posts"));
 route.use("/comments", require("./comments"));
 route.use("/chats", require("./chats"));
 
-route.post("/upload", AuthMiddleware.isAuthorized, upload.single("video"), HomeController.upload);
+route.post("/upload", AuthMiddleware.isAuthorized, upload.single("file"), HomeController.upload);
 
 route.get("**", HomeController.notFound);
 

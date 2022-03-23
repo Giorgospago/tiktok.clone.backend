@@ -18,6 +18,55 @@ const me = async (req, res) => {
     });
 };
 
+const favorites = async (req, res) => {
+    const postIds = await Like
+        .distinct("post", {
+            user: req.user._id,
+            pressed: {$mod: [2, 1]}
+        });
+
+    let posts = await Post
+        .find({_id: {$in: postIds}})
+        .select({
+            createdAt: 1,
+            description: 1,
+            scope: 1,
+            tags: 1,
+            videoUrl: 1,
+            likes: 1,
+            shares: 1,
+            comments: 1
+        })
+        .populate([
+            {
+                path: "user",
+                select: {
+                    name: 1,
+                    photo: 1
+                }
+            },
+            {path: "likes"}
+        ])
+        .sort({
+            updatedAt: -1
+        })
+        .exec();
+
+    posts = posts.map(p => {
+        p = p.toObject();
+        p.likes = p.likes.length;
+        p.shares = p.shares.length;
+        p.comments = p.comments.length;
+        return p;
+    });
+
+    res.json({
+        success: true,
+        data: posts,
+        message: "Your favorite posts"
+    });
+};
+
 const follow = async (req, res) => {
     const loggedIn = await User.findById(req.user._id).exec();
     const toFollow = await User.findById(req.params.id).exec();
@@ -216,6 +265,7 @@ const addDeviceToken = async (req, res) => {
 
 module.exports = {
     me,
+    favorites,
     follow,
     userProfile,
     following,

@@ -5,6 +5,7 @@ const route = require("express").Router();
 
 // Auth routes
 route.get("/me", AuthMiddleware.isAuthorized, UserController.me);
+route.get("/favorites", AuthMiddleware.isAuthorized, UserController.favorites);
 route.get("/follow/:id", AuthMiddleware.isAuthorized, UserController.follow);
 route.get("/profile/:id", AuthMiddleware.isAuthorized, UserController.userProfile);
 route.get("/profile/:id/following", AuthMiddleware.isAuthorized, UserController.following);
