@@ -52,56 +52,176 @@ const like = async (req, res) => {
     }
 };
 
+// const searchOld = async (req, res) => {
+//     const limit = req.body.limit || 1;
+//     const seen = req.body.seen || [];
+//     const ids = req.body.ids || [];
+//     const me = await User.findById(req.user._id).exec();
+//
+//     const filters = {
+//         active: true
+//     };
+//
+//     if (ids.length) {
+//         filters._id = {$in: ids};
+//     } else {
+//         filters.user = {$ne: me._id};
+//
+//         if (seen.length) {
+//             filters._id = {$nin: seen};
+//         }
+//     }
+//
+//     let posts = await Post
+//         .find(filters)
+//         .select({
+//             createdAt: 1,
+//             description: 1,
+//             scope: 1,
+//             tags: 1,
+//             videoUrl: 1,
+//             likes: 1,
+//             shares: 1,
+//             comments: 1
+//         })
+//         .populate([
+//             {
+//                 path: "user",
+//                 select: {
+//                     name: 1,
+//                     photo: 1
+//                 }
+//             },
+//             {path: "likes"}
+//         ])
+//         .limit(limit)
+//         .sort({
+//             updatedAt: -1
+//         })
+//         .exec();
+//
+//     posts = posts.map(p => {
+//         p = p.toObject();
+//
+//         const myFollowing = me.following.map(f => f.toString());
+//         p.user.following = myFollowing.includes(p.user._id.toString()) || (me.id === p.user._id.toString());
+//         p.liked = p.likes.some(l => l.user.toString() === me._id.toString());
+//
+//         p.likes = p.likes.length;
+//         p.shares = p.shares.length;
+//         p.comments = p.comments.length;
+//         return p;
+//     });
+//
+//     res.json({
+//         success: true,
+//         message: "Posts fetched successfully",
+//         data: posts
+//     });
+// };
 const search = async (req, res) => {
     const limit = req.body.limit || 1;
     const seen = req.body.seen || [];
     const ids = req.body.ids || [];
     const me = await User.findById(req.user._id).exec();
 
+    const pipeline = [];
+
+    /**
+     * Generate Match filters
+     */
     const filters = {
         active: true
     };
 
     if (ids.length) {
-        filters._id = {$in: ids};
+        filters._id = {$in: ids.map(ObjectId)};
     } else {
         filters.user = {$ne: me._id};
 
         if (seen.length) {
-            filters._id = {$nin: seen};
+            filters._id = {$nin: seen.map(ObjectId)};
         }
     }
+    pipeline.push({$match: filters});
 
-    let posts = await Post
-        .find(filters)
-        .select({
-            createdAt: 1,
-            description: 1,
-            scope: 1,
-            tags: 1,
-            videoUrl: 1,
-            likes: 1,
-            shares: 1,
-            comments: 1
-        })
-        .populate([
-            {
-                path: "user",
-                select: {
-                    name: 1,
-                    photo: 1
-                }
-            },
-            {path: "likes"}
-        ])
-        .limit(limit)
-        .sort({
+
+    /**
+     * Lookups
+     */
+    pipeline.push(...[
+        {
+            $lookup: {
+                from: "views",
+                localField: "_id",
+                foreignField: "post",
+                pipeline: [
+                    {
+                        $count: "total"
+                    }
+                ],
+                as: "views"
+            }
+        },
+        {
+            $set: {
+                views: {$arrayElemAt: ["$views", 0]}
+            }
+        },
+        {
+            $set: {
+                views: "$views.total"
+            }
+        }
+    ]);
+
+
+    /**
+     * Project documents
+     */
+    const projection = {
+        createdAt: 1,
+        updatedAt: 1,
+        description: 1,
+        scope: 1,
+        tags: 1,
+        videoUrl: 1,
+        likes: 1,
+        shares: 1,
+        user: 1,
+        comments: 1,
+        views: 1
+    };
+    pipeline.push({$project: projection});
+
+    /**
+     * Sort data
+     */
+    pipeline.push({
+        $sort: {
             updatedAt: -1
-        })
-        .exec();
+        }
+    });
+
+    /**
+     * Limit data
+     */
+    pipeline.push({$limit: limit});
+
+    const docs = await Post.aggregate(pipeline);
+    let posts = await Post.populate(docs, {
+        path: "user",
+        select: {
+            name: 1,
+            photo: 1
+        }
+    });
+    posts = await Post.populate(posts, {
+        path: "likes"
+    });
 
     posts = posts.map(p => {
-        p = p.toObject();
+        p = defrost(p);
 
         const myFollowing = me.following.map(f => f.toString());
         p.user.following = myFollowing.includes(p.user._id.toString()) || (me.id === p.user._id.toString());
