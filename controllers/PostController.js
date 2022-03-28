@@ -64,9 +64,12 @@ const search = async (req, res) => {
 
     if (ids.length) {
         filters._id = {$in: ids};
-    } else if (seen.length) {
-        filters._id = {$nin: seen};
-        filters.user = {$ne: me._id}
+    } else {
+        filters.user = {$ne: me._id};
+
+        if (seen.length) {
+            filters._id = {$nin: seen};
+        }
     }
 
     let posts = await Post
@@ -101,7 +104,7 @@ const search = async (req, res) => {
         p = p.toObject();
 
         const myFollowing = me.following.map(f => f.toString());
-        p.user.following = myFollowing.includes(p.user._id.toString());
+        p.user.following = myFollowing.includes(p.user._id.toString()) || (me.id === p.user._id.toString());
         p.liked = p.likes.some(l => l.user.toString() === me._id.toString());
 
         p.likes = p.likes.length;
