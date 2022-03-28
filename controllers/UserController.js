@@ -33,6 +33,7 @@ const favorites = async (req, res) => {
             scope: 1,
             tags: 1,
             videoUrl: 1,
+            thumbnailUrl: 1,
             likes: 1,
             shares: 1,
             comments: 1
