@@ -383,6 +383,7 @@ const textSearch = async (req, res) => {
                 scope: 1,
                 tags: 1,
                 videoUrl: 1,
+                thumbnailUrl: 1,
                 likes: 1,
                 shares: 1,
                 comments: 1
@@ -438,6 +439,150 @@ const textSearch = async (req, res) => {
     });
 };
 
+const viewCalculation = async (req, res) => {
+    let results = [];
+
+    try {
+        results = await View.aggregate([
+            // {
+            //     $limit: 1
+            // },
+            {
+                $set: {
+                    duration: {
+                        $dateDiff:
+                            {
+                                startDate: "$enteredAt",
+                                endDate: "$leftAt",
+                                unit: "millisecond"
+                            }
+                    }
+                }
+            },
+            /** Per post
+             *********************
+             * sum of duration
+             * avg of duration
+             * total views
+             * total users
+             **********************
+             */
+            {
+                $group: {
+                    _id: "$post",
+                    sumOfDuration: {$sum: "$duration"},
+                    avgOfDuration: {$avg: "$duration"},
+                    totalViews: {$sum: 1},
+                    totalUsers: {$addToSet: "$user"}
+                }
+            },
+
+            // method 1
+            // {
+            //     $set: {
+            //         post: "$_id",
+            //         totalUsers: {$size: "$totalUsers"}
+            //     }
+            // },
+            // {
+            //     $unset: ["_id"]
+            // }
+
+            // method 2
+            {
+                $project: {
+                    sumOfDuration: 1,
+                    avgOfDuration: {$round: "$avgOfDuration"},
+                    totalViews: 1,
+                    totalUsers: {$size: "$totalUsers"},
+                    // post: "$_id",
+                    // _id: 0
+                }
+            },
+            {
+                $lookup: {
+                    from: "likes",
+                    localField: "post",
+                    foreignField: "post",
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $ne: [{$mod: ["$pressed", 2]}, 0]
+                                }
+                            }
+                        },
+                        {
+                            $count: "totalLikes"
+                        }
+                    ],
+                    as: "likes"
+                }
+            },
+
+            // Method 1
+            // {
+            //     $set: {
+            //         likes: {$arrayElemAt: ["$likes", 0]}
+            //     }
+            // },
+            // {
+            //     $set: {
+            //         likes: {$ifNull: ["$likes.totalLikes", 0]}
+            //     }
+            // },
+
+            // Method 2
+            {
+                $set: {
+                    likes: {
+                        $ifNull: [
+                            {
+                                $let: {
+                                    vars: {
+                                        myObj: {$arrayElemAt: ["$likes", 0]}
+                                    },
+                                    in: "$$myObj.totalLikes"
+                                }
+                            },
+                            0
+                        ]
+                    }
+                }
+            },
+
+            {
+                $project: {
+                    _id: 1,
+                    stats: {
+                        sumOfDuration: "$sumOfDuration",
+                        avgOfDuration: "$avgOfDuration",
+                        totalViews: "$totalViews",
+                        totalUsers: "$totalUsers"
+                    }
+                }
+            },
+
+            {
+                $merge: {
+                    into: "posts",
+                    on: "_id",
+                    whenMatched: "merge",
+                    whenNotMatched: "discard"
+                }
+            }
+        ]);
+    } catch (e) {
+        console.log(e.message)
+    }
+
+    res.json({
+        success: true,
+        data: results,
+        message: "Views calculated"
+    });
+};
+
 module.exports = {
     like,
     search,
@@ -445,5 +590,6 @@ module.exports = {
     getComments,
     addComment,
     textSearch,
-    storeNewView
+    storeNewView,
+    viewCalculation
 };

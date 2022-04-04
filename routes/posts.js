@@ -7,5 +7,6 @@ route.get("/:id/like", AuthMiddleware.isAuthorized, PostController.like);
 route.get("/:id/comments", AuthMiddleware.isAuthorized, PostController.getComments);
 route.post("/:id/comments", AuthMiddleware.isAuthorized, PostController.addComment);
 route.post("/view", AuthMiddleware.isAuthorized, PostController.storeNewView);
+route.get("/calculate-views", /*AuthMiddleware.isAuthorized,*/ PostController.viewCalculation);
 
 module.exports = route;
