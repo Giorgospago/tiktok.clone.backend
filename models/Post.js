@@ -59,7 +59,10 @@ const schema = new Schema(
         screenshots: [{
             type: Schema.Types.ObjectId,
             ref: "Screenshot"
-        }]
+        }],
+        duration: {
+            type: Number
+        }
     },
     {
         timestamps: true

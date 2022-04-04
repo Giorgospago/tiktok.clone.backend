@@ -8,5 +8,6 @@ route.get("/:id/comments", AuthMiddleware.isAuthorized, PostController.getCommen
 route.post("/:id/comments", AuthMiddleware.isAuthorized, PostController.addComment);
 route.post("/view", AuthMiddleware.isAuthorized, PostController.storeNewView);
 route.get("/calculate-views", /*AuthMiddleware.isAuthorized,*/ PostController.viewCalculation);
+route.get("/calculate-video-duration", /*AuthMiddleware.isAuthorized,*/ PostController.calculateVideoDuration);
 
 module.exports = route;

@@ -242,9 +242,10 @@ const search = async (req, res) => {
 
 const create = async (req, res) => {
     const user = await User.findById(req.user._id).exec();
-
+    const videoInfo = await downloadVideoAndGetInfo(req.body.videoUrl);
     const postData = {
         ...req.body,
+        duration: videoInfo.duration,
         user: user._id
     };
     const post = new Post(postData);
@@ -583,6 +584,26 @@ const viewCalculation = async (req, res) => {
     });
 };
 
+const calculateVideoDuration = async (req, res) => {
+    const posts = await Post
+        .find({duration: {$exists: false}})
+        .select("videoUrl")
+        .exec();
+
+    for (let post of posts) {
+        const videoInfo = await downloadVideoAndGetInfo(post.videoUrl);
+        post.duration = videoInfo.duration;
+        await post.save();
+    }
+
+    res.json({
+        success: true,
+        data: posts,
+        message: "Duration calculated"
+    });
+};
+
+
 module.exports = {
     like,
     search,
@@ -591,5 +612,6 @@ module.exports = {
     addComment,
     textSearch,
     storeNewView,
-    viewCalculation
+    viewCalculation,
+    calculateVideoDuration
 };
