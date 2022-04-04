@@ -190,7 +190,8 @@ const search = async (req, res) => {
         shares: 1,
         user: 1,
         comments: 1,
-        views: 1
+        views: 1,
+        sortValue: 1
     };
     pipeline.push({$project: projection});
 
@@ -199,7 +200,7 @@ const search = async (req, res) => {
      */
     pipeline.push({
         $sort: {
-            updatedAt: -1
+            sortValue: -1
         }
     });
 
@@ -442,6 +443,11 @@ const textSearch = async (req, res) => {
 
 const viewCalculation = async () => {
     try {
+        const viewsMultiplier = parseFloat(await redis.get('multiplier:views'));
+        const dtMultiplier = parseFloat(await redis.get('multiplier:dt'));
+        const likesMultiplier = parseFloat(await redis.get('multiplier:likes'));
+        const commentsMultiplier = parseFloat(await redis.get('multiplier:comments'));
+
         await View.aggregate([
             // {
             //     $limit: 1
@@ -561,6 +567,38 @@ const viewCalculation = async () => {
                 }
             },
 
+            {
+                $merge: {
+                    into: "posts",
+                    on: "_id",
+                    whenMatched: "merge",
+                    whenNotMatched: "discard"
+                }
+            }
+        ]);
+
+        await Post.aggregate([
+            {
+                $project: {
+                    _id: 1,
+                    comments: {$size: "$comments"},
+                    likes: {$size: "$likes"},
+                    stats: 1,
+                    dt: {$divide: [{$divide: ["$stats.avgOfDuration", 1000]}, "$duration"]}
+                }
+            },
+            {
+                $project: {
+                    sortValue: {
+                        $sum: [
+                            {$multiply: ["$stats.totalViews", viewsMultiplier]},
+                            {$multiply: ["$dt", dtMultiplier]},
+                            {$multiply: ["$likes", likesMultiplier]},
+                            {$multiply: ["$comments", commentsMultiplier]}
+                        ]
+                    }
+                }
+            },
             {
                 $merge: {
                     into: "posts",
