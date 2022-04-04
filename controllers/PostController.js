@@ -440,23 +440,20 @@ const textSearch = async (req, res) => {
     });
 };
 
-const viewCalculation = async (req, res) => {
-    let results = [];
-
+const viewCalculation = async () => {
     try {
-        results = await View.aggregate([
+        await View.aggregate([
             // {
             //     $limit: 1
             // },
             {
                 $set: {
                     duration: {
-                        $dateDiff:
-                            {
-                                startDate: "$enteredAt",
-                                endDate: "$leftAt",
-                                unit: "millisecond"
-                            }
+                        $dateDiff: {
+                            startDate: "$enteredAt",
+                            endDate: "$leftAt",
+                            unit: "millisecond"
+                        }
                     }
                 }
             },
@@ -576,12 +573,6 @@ const viewCalculation = async (req, res) => {
     } catch (e) {
         console.log(e.message)
     }
-
-    res.json({
-        success: true,
-        data: results,
-        message: "Views calculated"
-    });
 };
 
 const calculateVideoDuration = async (req, res) => {

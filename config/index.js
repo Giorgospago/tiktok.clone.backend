@@ -9,3 +9,4 @@ require("./pug");
 require("./mailer");
 require("./sockets");
 require("./firebase");
+require("./crontab");
