@@ -414,6 +414,14 @@ const textSearch = async (req, res) => {
             .find({
                 text: reg
             })
+            .populate([
+                {
+                    path: "post",
+                    select: {
+                        videoUrl: 1
+                    }
+                }
+            ])
             .exec()
     ];
 
