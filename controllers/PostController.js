@@ -1,4 +1,5 @@
 const admin = require("firebase-admin");
+
 const like = async (req, res) => {
     // TODO zartas
     try {
@@ -252,6 +253,18 @@ const create = async (req, res) => {
     };
     const post = new Post(postData);
     await post.save();
+
+    if (videoInfo.audioUrl) {
+        const audio = new Audio({
+            url: videoInfo.audioUrl,
+            name: "Shazam",
+            firstPost: post._id
+        });
+        await audio.save();
+
+        post.audio = audio._id;
+        await post.save();
+    }
 
     if (!Array.isArray(user.posts)) {
         user.posts = [];

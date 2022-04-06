@@ -5,6 +5,7 @@ const bcrypt = require('bcryptjs');
 const uuid = require("uuid");
 const ffprobe = require("ffprobe");
 const ffprobeStatic = require("ffprobe-static");
+const extractAudio = require('ffmpeg-extract-audio');
 
 global._ = require('lodash');
 
@@ -38,11 +39,33 @@ global.download = (url, dest) => {
 };
 
 global.downloadVideoAndGetInfo = async (videoUrl) => {
-    const localFile = `temp/${uuid.v4()}.mp4`;
+    const fileId = uuid.v4();
+    const localFile = `temp/${fileId}.mp4`;
+    const localAudioFile = `temp/${fileId}.mp3`;
     await download(videoUrl, localFile);
+
+    await extractAudio({
+        input: localFile,
+        output: localAudioFile
+    });
+
+    const uploadData = await new Promise(resolve => {
+        s3.upload({
+            Bucket: process.env.AWS_S3_BUCKET,
+            Key: `${fileId}.mp3`,
+            Body: fs.readFileSync(localAudioFile),
+            ACL: process.env.AWS_S3_ACL
+        }, (err, data) => {
+            if (err) {
+                resolve(null);
+            }
+            resolve(data);
+        });
+    });
 
     const info = await ffprobe(localFile, {path: ffprobeStatic.path});
     fs.rm(localFile, () => {});
+    fs.rm(localAudioFile, () => {});
 
     if (!(info && info.streams && info.streams.length)) {
         console.log("Unable to decode file");
@@ -53,6 +76,7 @@ global.downloadVideoAndGetInfo = async (videoUrl) => {
     const audioInfo = info.streams.find(s => s.codec_type === "audio");
 
     return {
-        duration: parseFloat(videoInfo.duration)
+        duration: parseFloat(videoInfo.duration),
+        audioUrl: uploadData.location || ""
     };
 };
