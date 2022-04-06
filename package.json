@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/Giorgospago/tiktok.clone.backend#readme",
   "dependencies": {
-    "aws-sdk": "^2.1106.0",
+    "aws-sdk": "^2.1108.0",
     "axios": "^0.26.1",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.0",

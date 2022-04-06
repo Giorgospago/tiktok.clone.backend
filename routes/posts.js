@@ -7,6 +7,7 @@ route.get("/:id/like", AuthMiddleware.isAuthorized, PostController.like);
 route.get("/:id/comments", AuthMiddleware.isAuthorized, PostController.getComments);
 route.post("/:id/comments", AuthMiddleware.isAuthorized, PostController.addComment);
 route.post("/view", AuthMiddleware.isAuthorized, PostController.storeNewView);
+route.post("/share", AuthMiddleware.isAuthorized, PostController.share);
 // route.get("/calculate-video-duration", /*AuthMiddleware.isAuthorized,*/ PostController.calculateVideoDuration);
 
 module.exports = route;

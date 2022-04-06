@@ -6,7 +6,11 @@ const schema = new Schema(
             type: Schema.Types.ObjectId,
             ref: "Post"
         },
-        user: {
+        sender: {
+            type: Schema.Types.ObjectId,
+            ref: "User"
+        },
+        receiver: {
             type: Schema.Types.ObjectId,
             ref: "User"
         }

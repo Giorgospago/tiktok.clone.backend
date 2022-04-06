@@ -1,3 +1,4 @@
+const admin = require("firebase-admin");
 const like = async (req, res) => {
     // TODO zartas
     try {
@@ -632,6 +633,71 @@ const calculateVideoDuration = async (req, res) => {
     });
 };
 
+const share = async (req, res) => {
+    const sender = await User.findById(req.user._id);
+    const receiver = await User.findById(req.body.receiver);
+    const post = await Post.findById(req.body.post);
+    const messageText = req.body.message || "Only for you!";
+
+    const share = new Share({sender, receiver, post});
+    await share.save();
+
+    if (!Array.isArray(post.shares)) {
+        post.shares = [];
+    }
+
+    post.shares.push(share._id);
+    await post.save();
+
+    // Send message
+    const chat = await Chat.findOne({
+        $and: [
+            {
+                users: {$elemMatch: {$eq: sender._id}}
+            },
+            {
+                users: {$elemMatch: {$eq: receiver._id}}
+            },
+            {
+                "users.2": {$exists: false}
+            }
+        ]
+    });
+    if (chat) {
+        const message = new ChatMessage({
+            chat: chat._id,
+            sender: sender._id,
+            message: messageText,
+            media: [
+                {
+                    type: "video",
+                    url: post.videoUrl
+                }
+            ]
+        });
+        await message.save();
+    }
+
+    // Send push notification
+    for (let t of receiver.deviceTokens) {
+        if (t.trim()) {
+            admin.messaging().send({
+                notification: {
+                    title: sender.name,
+                    body: messageText,
+                    imageUrl: post.thumbnailUrl
+                },
+                token: t
+            });
+        }
+    }
+
+    res.json({
+        success: true,
+        message: "Share saved"
+    });
+};
+
 
 module.exports = {
     like,
@@ -642,5 +708,6 @@ module.exports = {
     textSearch,
     storeNewView,
     viewCalculation,
-    calculateVideoDuration
+    calculateVideoDuration,
+    share
 };
