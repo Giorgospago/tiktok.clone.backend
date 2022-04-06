@@ -676,6 +676,7 @@ const share = async (req, res) => {
             ]
         });
         await message.save();
+        io.emit(`chat:receive-message:${chat.id}`, message);
     }
 
     // Send push notification
