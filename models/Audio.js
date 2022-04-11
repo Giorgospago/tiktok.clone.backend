@@ -12,7 +12,8 @@ const schema = new Schema(
         firstPost: {
             type: Schema.Types.ObjectId,
             ref: "Post"
-        }
+        },
+        meta: Schema.Types.Mixed
     },
     {
         timestamps: true

@@ -1,4 +1,5 @@
 const https = require('https');
+const axios = require('axios');
 const fs = require('fs');
 const {Types} = require('mongoose');
 const bcrypt = require('bcryptjs');
@@ -63,6 +64,24 @@ global.downloadVideoAndGetInfo = async (videoUrl) => {
         });
     });
 
+    let songMeta = {};
+    if (uploadData.Location) {
+        try {
+            const response = await axios.request({
+                method: 'POST',
+                url: 'https://api.audd.io/',
+                data: {
+                    url: uploadData.Location,
+                    return: "lyrics,apple_music,spotify",
+                    api_token: process.env.AUDD_IO_API_KEY
+                }
+            });
+            if (response.data && response.data.status === "success") {
+                songMeta = response.data.result;
+            }
+        } catch (e) {}
+    }
+
     const info = await ffprobe(localFile, {path: ffprobeStatic.path});
     fs.rm(localFile, () => {});
     fs.rm(localAudioFile, () => {});
@@ -77,6 +96,9 @@ global.downloadVideoAndGetInfo = async (videoUrl) => {
 
     return {
         duration: parseFloat(videoInfo.duration),
-        audioUrl: uploadData.location || ""
+        audio: {
+            url: uploadData.Location || "",
+            meta: songMeta
+        }
     };
 };

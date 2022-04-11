@@ -121,6 +121,7 @@ const like = async (req, res) => {
 //         data: posts
 //     });
 // };
+
 const search = async (req, res) => {
     const limit = req.body.limit || 1;
     const seen = req.body.seen || [];
@@ -186,6 +187,7 @@ const search = async (req, res) => {
         updatedAt: 1,
         description: 1,
         scope: 1,
+        audio: 1,
         tags: 1,
         videoUrl: 1,
         likes: 1,
@@ -222,6 +224,9 @@ const search = async (req, res) => {
     posts = await Post.populate(posts, {
         path: "likes"
     });
+    posts = await Post.populate(posts, {
+        path: "audio"
+    });
 
     posts = posts.map(p => {
         p = defrost(p);
@@ -254,11 +259,12 @@ const create = async (req, res) => {
     const post = new Post(postData);
     await post.save();
 
-    if (videoInfo.audioUrl) {
+    if (videoInfo.audio.url) {
         const audio = new Audio({
-            url: videoInfo.audioUrl,
-            name: "Shazam",
-            firstPost: post._id
+            url: videoInfo.audio.url,
+            name: `${videoInfo.audio.meta.artist} - ${videoInfo.audio.meta.title} (${videoInfo.audio.meta.album})`,
+            firstPost: post._id,
+            meta: videoInfo.audio.meta
         });
         await audio.save();
 
