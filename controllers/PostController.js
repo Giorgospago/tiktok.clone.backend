@@ -195,6 +195,7 @@ const search = async (req, res) => {
         audio: 1,
         tags: 1,
         videoUrl: 1,
+        videoVolume: 1,
         thumbnailUrl: 1,
         likes: 1,
         shares: 1,
@@ -256,7 +257,7 @@ const search = async (req, res) => {
 
 const create = async (req, res) => {
     const user = await User.findById(req.user._id).exec();
-    const videoInfo = await downloadVideoAndGetInfo(req.body.videoUrl);
+    const videoInfo = await downloadVideoAndGetInfo(req.body.videoUrl, !!req.body.audio);
     const postData = {
         ...req.body,
         duration: videoInfo.duration,
@@ -265,7 +266,7 @@ const create = async (req, res) => {
     const post = new Post(postData);
     await post.save();
 
-    if (videoInfo.audio.url) {
+    if (videoInfo.audio && videoInfo.audio.url) {
         const audio = new Audio({
             url: videoInfo.audio.url,
             name: `${videoInfo.audio.meta.artist} - ${videoInfo.audio.meta.title} (${videoInfo.audio.meta.album})`,

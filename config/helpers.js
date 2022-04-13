@@ -39,11 +39,25 @@ global.download = (url, dest) => {
     });
 };
 
-global.downloadVideoAndGetInfo = async (videoUrl) => {
+global.downloadVideoAndGetInfo = async (videoUrl, audioExists) => {
     const fileId = uuid.v4();
     const localFile = `temp/${fileId}.mp4`;
     const localAudioFile = `temp/${fileId}.mp3`;
     await download(videoUrl, localFile);
+
+    const info = await ffprobe(localFile, {path: ffprobeStatic.path});
+    if (!(info && info.streams && info.streams.length)) {
+        console.log("Unable to decode file");
+        return {};
+    }
+    const videoInfo = info.streams.find(s => s.codec_type === "video");
+
+    if (audioExists) {
+        fs.rm(localFile, () => {});
+        return {
+            duration: parseFloat(videoInfo.duration)
+        };
+    }
 
     await extractAudio({
         input: localFile,
@@ -82,17 +96,8 @@ global.downloadVideoAndGetInfo = async (videoUrl) => {
         } catch (e) {}
     }
 
-    const info = await ffprobe(localFile, {path: ffprobeStatic.path});
     fs.rm(localFile, () => {});
     fs.rm(localAudioFile, () => {});
-
-    if (!(info && info.streams && info.streams.length)) {
-        console.log("Unable to decode file");
-        return {};
-    }
-
-    const videoInfo = info.streams.find(s => s.codec_type === "video");
-    const audioInfo = info.streams.find(s => s.codec_type === "audio");
 
     return {
         duration: parseFloat(videoInfo.duration),
