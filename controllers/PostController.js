@@ -126,6 +126,7 @@ const search = async (req, res) => {
     const limit = req.body.limit || 1;
     const seen = req.body.seen || [];
     const ids = req.body.ids || [];
+    const audios = req.body.audios || [];
     const me = await User.findById(req.user._id).exec();
 
     const pipeline = [];
@@ -137,7 +138,10 @@ const search = async (req, res) => {
         active: true
     };
 
-    if (ids.length) {
+    if (audios.length) {
+        filters.audio = {$in: audios.map(ObjectId)};
+    }
+    else if (ids.length) {
         filters._id = {$in: ids.map(ObjectId)};
     } else {
         filters.user = {$ne: me._id};
@@ -146,6 +150,7 @@ const search = async (req, res) => {
             filters._id = {$nin: seen.map(ObjectId)};
         }
     }
+
     pipeline.push({$match: filters});
 
 
@@ -190,6 +195,7 @@ const search = async (req, res) => {
         audio: 1,
         tags: 1,
         videoUrl: 1,
+        thumbnailUrl: 1,
         likes: 1,
         shares: 1,
         user: 1,
