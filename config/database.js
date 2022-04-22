@@ -3,8 +3,13 @@ const chalk = require("chalk");
 
 // set("debug", true);
 
-connect(process.env.MONGODB_URI, () => {
-    console.log(
-        chalk.greenBright("Connected to MongoDB.")
-    );
-});
+
+try {
+    connect(process.env.MONGODB_URI, () => {
+        console.log(
+            chalk.greenBright("Connected to MongoDB.")
+        );
+    });
+} catch (e) {
+    console.log(e);
+}

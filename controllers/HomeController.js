@@ -1,27 +1,32 @@
 
-const welcome = (req, res) => {
-    res.json({
-        success: true
-    });
-};
+try{
 
-const upload = (req, res) => {
-    res.json({
-        success: true,
-        message: `File uploaded successfully`,
-        data: req.file
-    });
-};
+    const welcome = (req, res) => {
+        res.json({
+            success: true
+        });
+    };
 
-const notFound = (req, res) => {
-    res.json({
-        success: false,
-        message: `Page: ${req.url} not found`
-    });
-};
+    const upload = (req, res) => {
+        res.json({
+            success: true,
+            message: `File uploaded successfully`,
+            data: req.file
+        });
+    };
 
-module.exports = {
-    welcome,
-    upload,
-    notFound
-};
+    const notFound = (req, res) => {
+        res.json({
+            success: false,
+            message: `Page: ${req.url} not found`
+        });
+    };
+
+    module.exports = {
+        welcome,
+        upload,
+        notFound
+    };
+} catch (e) {
+    console.log(e);
+}

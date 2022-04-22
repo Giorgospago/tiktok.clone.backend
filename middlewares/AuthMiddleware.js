@@ -1,30 +1,35 @@
-const jwt = require('jsonwebtoken');
 
-const isAuthorized = (req, res, next) => {
-    const authHeader = req.headers.authorization;
-    if (!authHeader) {
-        return res.json({
-            success: false,
-            message: "There is no Authorization header"
-        });
-    }
+try {
+    const jwt = require('jsonwebtoken');
 
-    const token = authHeader.replace("Bearer ", "");
-    let decoded;
-    try {
-        decoded = jwt.verify(token, process.env.JWT_SECRET)
-    } catch (err) {
-        return res.json({
-            success: false,
-            message: "Invalid JWT"
-        });
-    }
+    const isAuthorized = (req, res, next) => {
+        const authHeader = req.headers.authorization;
+        if (!authHeader) {
+            return res.json({
+                success: false,
+                message: "There is no Authorization header"
+            });
+        }
 
-    req.token = token;
-    req.user = decoded.user;
-    next();
-};
+        const token = authHeader.replace("Bearer ", "");
+        let decoded;
+        try {
+            decoded = jwt.verify(token, process.env.JWT_SECRET)
+        } catch (err) {
+            return res.json({
+                success: false,
+                message: "Invalid JWT"
+            });
+        }
 
-module.exports = {
-    isAuthorized
-};
+        req.token = token;
+        req.user = decoded.user;
+        next();
+    };
+
+    module.exports = {
+        isAuthorized
+    };
+} catch (e) {
+    console.log(e);
+}
