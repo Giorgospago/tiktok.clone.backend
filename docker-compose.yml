@@ -1,0 +1,25 @@
+version: '2'
+
+services:
+
+    zartas:
+        image: "node:16-alpine"
+        restart: always
+        command: npm run dev
+        volumes:
+            - .:/var/www
+        working_dir: /var/www
+        ports:
+            - "3000:3000"
+        depends_on:
+            - tasongo
+
+    tasongo:
+        image: mongo:5.0
+        ports:
+            - "27017:27017"
+        environment:
+            MONGO_INITDB_ROOT_USERNAME: root
+            MONGO_INITDB_ROOT_PASSWORD: example
+        volumes:
+            - ~/docker-data/tasongo:/data/db

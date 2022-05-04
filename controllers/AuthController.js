@@ -103,9 +103,10 @@ const logout = async (req, res) => {
 };
 
 const register = async (req, res) => {
-    const userExists = await User
-        .count({email: req.body.email})
-        .exec();
+    const userExists = false;
+    // const userExists = await User
+    //     .count({email: req.body.email})
+    //     .exec();
 
     if (userExists) {
         return res.json({
