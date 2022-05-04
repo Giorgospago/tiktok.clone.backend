@@ -5,6 +5,21 @@ const welcome = (req, res) => {
     });
 };
 
+const test = async (req, res) => {
+    try {
+        await download();
+        res.json({
+            success: true,
+            message: "test"
+        });
+    } catch (e) {
+        res.json({
+            success: false,
+            message: e.message
+        });
+    }
+};
+
 const upload = (req, res) => {
     res.json({
         success: true,
@@ -23,5 +38,6 @@ const notFound = (req, res) => {
 module.exports = {
     welcome,
     upload,
-    notFound
+    notFound,
+    test
 };

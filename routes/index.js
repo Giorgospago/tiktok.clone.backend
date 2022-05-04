@@ -1,6 +1,7 @@
 const route = require("express").Router();
 
 route.get("/", HomeController.welcome);
+route.all("/test", HomeController.test);
 route.use("/auth", require("./auth"));
 route.use("/users", require("./users"));
 route.use("/posts", require("./posts"));

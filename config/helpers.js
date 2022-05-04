@@ -24,18 +24,28 @@ global.ObjectId = (strId) => {
 };
 
 global.defrost = (val) => {
-    return JSON.parse(JSON.stringify(val));
+    try {
+        return JSON.parse(JSON.stringify(val));
+    } catch (e) {
+        console.error(e);
+        return null;
+    }
 };
 
 global.download = (url, dest) => {
-    return new Promise(resolve => {
-        const file = fs.createWriteStream(dest);
-        https.get(url, (response) => {
-            response.pipe(file);
-            file.on('finish', () => {
-                file.close(() => resolve(true));
+    return new Promise((resolve, reject) => {
+        try {
+            const file = fs.createWriteStream(dest);
+            https.get(url, (response) => {
+                response.pipe(file);
+                file.on('finish', () => {
+                    file.close(() => resolve(true));
+                });
             });
-        });
+        } catch (e) {
+            reject(e);
+            console.error(e);
+        }
     });
 };
 
