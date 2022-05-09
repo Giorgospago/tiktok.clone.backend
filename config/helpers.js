@@ -82,7 +82,7 @@ global.downloadVideoAndGetInfo = async (videoUrl, audioExists) => {
             ACL: process.env.AWS_S3_ACL
         }, (err, data) => {
             if (err) {
-                resolve(null);
+                return resolve(null);
             }
             resolve(data);
         });

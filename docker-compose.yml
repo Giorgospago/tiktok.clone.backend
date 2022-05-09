@@ -1,9 +1,19 @@
-version: '2'
+version: '3.8'
+
+volumes:
+    mongodata: {}
+    redisdata: {}
 
 services:
 
     zartas:
-        image: "node:16-alpine"
+        hostname: zartas
+        dns:
+            - "8.8.8.8"
+            - "8.8.4.4"
+        dns_search: ''
+        tty: true
+        build: ./docker/nodejs
         restart: always
         command: npm run dev
         volumes:
@@ -15,6 +25,12 @@ services:
             - tasongo
 
     tasongo:
+        hostname: tasongo
+        dns:
+            - "8.8.8.8"
+            - "8.8.4.4"
+        dns_search: ''
+        tty: true
         image: mongo:5.0
         ports:
             - "27017:27017"
@@ -22,4 +38,17 @@ services:
             MONGO_INITDB_ROOT_USERNAME: root
             MONGO_INITDB_ROOT_PASSWORD: example
         volumes:
-            - ~/docker-data/tasongo:/data/db
+            - mongodata:/data/db
+
+    achiredis:
+        hostname: achiredis
+        dns:
+            - "8.8.8.8"
+            - "8.8.4.4"
+        dns_search: ''
+        tty: true
+        image: redis:7.0-alpine
+        ports:
+            - "6379:6379"
+        volumes:
+            - redisdata:/data

@@ -3,8 +3,6 @@ const chalk = require("chalk");
 
 // mongoose.set("debug", true);
 
-console.log(process.env.MONGODB_URI);
-
 mongoose.connect(process.env.MONGODB_URI, (err) => {
     if (err) {
         console.error(err)
