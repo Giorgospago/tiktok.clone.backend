@@ -20,7 +20,7 @@ services:
         command: npm start
         working_dir: /var/www
         ports:
-            - "3000:3000"
+            - "3355:3355"
         depends_on:
             - tasongo
             - achiredis
