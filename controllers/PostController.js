@@ -287,7 +287,7 @@ const create = async (req, res) => {
 
     res.json({
         success: true,
-        message: "Your post just created !"
+        message: "Your post just created"
     });
 };
 
