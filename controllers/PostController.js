@@ -260,7 +260,7 @@ const create = async (req, res) => {
     const videoInfo = await downloadVideoAndGetInfo(req.body.videoUrl, !!req.body.audio);
     const postData = {
         ...req.body,
-        duration: videoInfo.duration,
+        duration: videoInfo.duration || null,
         user: user._id
     };
     const post = new Post(postData);
