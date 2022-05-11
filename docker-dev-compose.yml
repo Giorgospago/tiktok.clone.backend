@@ -18,6 +18,8 @@ services:
             dockerfile: ./docker/nodejs/Dockerfile
         restart: always
         command: npm start
+#        volumes:
+#            - .:/var/www
         working_dir: /var/www
         ports:
             - "3000:3000"
