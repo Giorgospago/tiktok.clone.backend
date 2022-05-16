@@ -60,6 +60,7 @@ const schema = new Schema(
             type: Schema.Types.ObjectId,
             ref: "Audio"
         }],
+        tags: [String],
         deviceTokens: [String]
     },
     {

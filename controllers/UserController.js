@@ -264,6 +264,31 @@ const addDeviceToken = async (req, res) => {
     })
 };
 
+const tagToggle = async (req, res) => {
+    const tag = req.query.tag;
+    const user = await User.findById(req.user._id);
+    let added = true;
+
+    if (!user.tags || !user.tags.length) {
+        user.tags = [tag];
+    } else {
+        const i = user.tags.indexOf(tag);
+        if (i === -1) {
+            user.tags.push(tag);
+        } else {
+            user.tags.splice(i, 1);
+            added = false;
+        }
+    }
+
+    await user.save();
+
+    res.json({
+        success: true,
+        message: `Tag "${tag}" ${added ? 'added' : 'removed'}`,
+    })
+};
+
 module.exports = {
     me,
     favorites,
@@ -271,6 +296,7 @@ module.exports = {
     userProfile,
     following,
     followers,
+    tagToggle,
     unfollowFollowers,
     unfollowFollowing,
     addDeviceToken

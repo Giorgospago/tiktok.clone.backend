@@ -202,6 +202,7 @@ const search = async (req, res) => {
         user: 1,
         comments: 1,
         views: 1,
+        nudity: 1,
         sortValue: 1
     };
     pipeline.push({$project: projection});
@@ -284,6 +285,9 @@ const create = async (req, res) => {
     }
     user.posts.push(post._id);
     await user.save();
+
+    post.nudity = await MLController.checkVideoNudity(post.videoUrl);
+    await post.save();
 
     res.json({
         success: true,

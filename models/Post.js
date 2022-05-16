@@ -40,6 +40,9 @@ const schema = new Schema(
         stats: {
             type: Schema.Types.Mixed
         },
+        nudity: [{
+            type: Schema.Types.Mixed
+        }],
         comments: [{
             type: Schema.Types.ObjectId,
             ref: "Comment"

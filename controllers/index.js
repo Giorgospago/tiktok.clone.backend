@@ -5,3 +5,4 @@ global.UserController = require("./UserController");
 global.CommentController = require("./CommentController");
 global.ChatController = require("./ChatController");
 global.AudioController = require("./AudioController");
+global.MLController = require("./MLController");
