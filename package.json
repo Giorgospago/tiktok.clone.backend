@@ -20,7 +20,7 @@
   "homepage": "https://github.com/Giorgospago/tiktok.clone.backend#readme",
   "dependencies": {
     "@google-cloud/video-intelligence": "^3.4.1",
-    "aws-sdk": "^2.1135.0",
+    "aws-sdk": "^2.1137.0",
     "axios": "^0.27.2",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.0",
@@ -37,6 +37,7 @@
     "get-video-duration": "^4.1.0",
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.21",
+    "mongoosastic": "^5.0.0",
     "mongoose": "^6.3.3",
     "multer": "^1.4.4",
     "multer-s3": "^2.10.0",

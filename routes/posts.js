@@ -1,5 +1,7 @@
 const route = require("express").Router();
 
+route.get("/sync", PostController.esSync);
+route.get("/elastic", PostController.elastic);
 route.post("/search", AuthMiddleware.isAuthorized, PostController.search);
 route.post("/text-search", AuthMiddleware.isAuthorized, PostController.textSearch);
 route.post("/create", AuthMiddleware.isAuthorized, PostController.create);

@@ -122,6 +122,30 @@ const like = async (req, res) => {
 //     });
 // };
 
+const esSync = async (req, res) => {
+    await Post.esTruncate();
+    await Post.synchronize();
+
+    res.json({
+        success: true,
+        message: "Posts are synced"
+    });
+};
+
+const elastic = async (req, res) => {
+    const result = await Post.search(
+        undefined,
+        {hydrate: true}
+    );
+    const posts = result.body.hits.hydrated;
+
+    res.json({
+        success: true,
+        message: "Posts fetched",
+        data: posts
+    });
+};
+
 const search = async (req, res) => {
     const limit = req.body.limit || 1;
     const seen = req.body.seen || [];
@@ -740,5 +764,7 @@ module.exports = {
     storeNewView,
     viewCalculation,
     calculateVideoDuration,
-    share
+    share,
+    elastic,
+    esSync
 };

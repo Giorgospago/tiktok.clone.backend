@@ -2,6 +2,7 @@ require("./helpers");
 require("./multer");
 require("./redis");
 require("./database");
+require("./elasticsearch");
 require("../models");
 require("../middlewares");
 require("../validators");

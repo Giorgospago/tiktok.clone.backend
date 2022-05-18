@@ -3,6 +3,7 @@ version: '3.8'
 volumes:
     mongodata: {}
     redisdata: {}
+    elasticdata: {}
 
 services:
 
@@ -55,3 +56,17 @@ services:
             - "6379:6379"
         volumes:
             - redisdata:/data
+
+    georgastic:
+        image: docker.elastic.co/elasticsearch/elasticsearch:7.5.2
+        container_name: georgastic
+        hostname: georgastic
+        environment:
+            - node.name=georgastic
+            - discovery.type=single-node
+            - bootstrap.memory_lock=true
+            - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+        volumes:
+            - elasticdata:/usr/share/elasticsearch/data
+        ports:
+            - 9200:9200

@@ -19,7 +19,10 @@ const schema = new Schema(
         },
         user: {
             type: Schema.Types.ObjectId,
-            ref: "User"
+            ref: "User",
+            // es_schema: User,
+            // es_indexed: true,
+            // es_select: 'name'
         },
         tags: [{
             type: String
@@ -71,5 +74,12 @@ const schema = new Schema(
         timestamps: true
     }
 );
+
+schema.plugin(mongoosastic, {
+    ...mongoosasticOptions,
+    // populate: [
+    //     {path: 'user', select: 'name'}
+    // ]
+});
 
 module.exports = model("Post", schema);
