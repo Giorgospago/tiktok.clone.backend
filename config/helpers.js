@@ -7,6 +7,7 @@ const uuid = require("uuid");
 const ffprobe = require("ffprobe");
 const ffprobeStatic = require("ffprobe-static");
 const extractAudio = require('ffmpeg-extract-audio');
+const path = require("path");
 
 global._ = require('lodash');
 
@@ -46,6 +47,24 @@ global.download = (url, dest) => {
             reject(e);
             console.error(e);
         }
+    });
+};
+
+global.s3Remove = (key) => {
+    return new Promise((resolve) => {
+        if (key.startsWith("https://")) {
+            const parts = path.parse(key);
+            key = parts.base;
+        }
+        s3.deleteObject({
+            Bucket: process.env.AWS_S3_BUCKET,
+            Key: key
+        }, (err, data) => {
+            if (err) {
+                return resolve(false);
+            }
+            return resolve(data);
+        });
     });
 };
 

@@ -1,3 +1,4 @@
+const path = require("path");
 const admin = require("firebase-admin");
 
 const like = async (req, res) => {
@@ -753,6 +754,44 @@ const share = async (req, res) => {
     });
 };
 
+const removePost = async (req, res) => {
+    const user = await User.findById(req.user._id);
+    const post = await Post.findById(req.params.id);
+
+    if (!post) {
+        return res.json({
+            success: false,
+            message: "Post not found"
+        });
+    }
+
+    if (post.user.toString() !== user.id) {
+        return res.json({
+            success: false,
+            message: "You are not authorized to delete this post"
+        });
+    }
+
+    user.posts = user.posts.filter(pid => pid.toString() !== post.id);
+
+    const promises = [
+        user.save(),
+        s3Remove(post.videoUrl),
+        Comment.deleteMany({post: post._id}),
+        Like.deleteMany({post: post._id}),
+        Screenshot.deleteMany({post: post._id}),
+        Share.deleteMany({post: post._id}),
+        View.deleteMany({post: post._id}),
+        Post.deleteOne({_id: post._id})
+    ];
+    await Promise.all(promises);
+
+    return res.json({
+        success: true,
+        message: "Post deleted successfully"
+    });
+};
+
 
 module.exports = {
     like,
@@ -766,5 +805,6 @@ module.exports = {
     calculateVideoDuration,
     share,
     elastic,
-    esSync
+    esSync,
+    removePost
 };
