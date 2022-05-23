@@ -1,6 +1,6 @@
 node_modules
 .env
 .idea
-*-firebase-adminsdk-*.json
+trick-tok-*.json
 temp/**/*
 !temp/.gitkeep
