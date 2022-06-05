@@ -29,6 +29,7 @@
     "cron": "^2.0.0",
     "dotenv": "^16.0.1",
     "express": "^4.18.1",
+    "express-async-errors": "^3.1.1",
     "express-validator": "^6.14.0",
     "ffmpeg-extract-audio": "^1.0.2",
     "ffprobe": "^1.1.2",
